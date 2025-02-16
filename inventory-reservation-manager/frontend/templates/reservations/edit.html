@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Reserve Item{% endblock %}
+
+{% block content %}
+<main class="py-4">
+    <div class="container">
+        <form method="post" class="p-2 rounded tertiary-color">
+            {% csrf_token %}
+
+            <!-- Item Selection -->
+            <div class="form-group">
+                <label for="{{ form.item.id_for_label }}">{{ form.item.label }}</label>
+                {{ form.item }}
+            </div>
+
+            <!-- Item Image Preview -->
+            <div id="item-image-container" class="mb-3" style="display: none;">
+                <img id="item-image" src="" class="img-thumbnail" style="max-width: 200px;">
+            </div>
+
+            <!-- Client Selection -->
+            <div class="form-group">
+                <label for="{{ form.client.id_for_label }}">{{ form.client.label }}</label>
+                {{ form.client }}
+            </div>
+
+            <!-- Start Date -->
+            <div class="form-group">
+                <label for="{{ form.start.id_for_label }}">{{ form.start.label }}</label>
+                {{ form.start }}
+            </div>
+
+            <!-- End Date -->
+            <div class="form-group">
+                <label for="{{ form.end.id_for_label }}">{{ form.end.label }}</label>
+                {{ form.end }}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Reservation</button>
+        </form>
+
+        {% if form.errors %}
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <div class="alert alert-danger mt-2">{{ field|title }}: {{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</main>
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const itemSelect = document.getElementById("id_item");
+        const imageContainer = document.getElementById("item-image-container");
+        const imageElement = document.getElementById("item-image");
+
+        function updateImage() {
+            const selectedItem = itemSelect.options[itemSelect.selectedIndex];
+            const imageUrl = selectedItem.getAttribute("data-image-url");
+
+            if (imageUrl) {
+                imageElement.src = imageUrl;
+                imageContainer.style.display = "initial";
+            } else {
+                imageContainer.style.display = "none";
+            }
+        }
+
+        itemSelect.addEventListener("change", updateImage);
+        updateImage(); // Run on page load in case item is pre-selected
+    });
+</script>
+{% endblock %}
+{% endblock %}

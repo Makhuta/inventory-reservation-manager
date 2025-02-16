@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reservations{% endblock %}
+
+{% block content %}
+<header>
+    <nav class="navbar navbar-expand-lg tertiary-color accent-color px-2">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item dropdown pl-2">
+                    <input type="text" id="tableFilter" class="form-control py-2" style="min-width: 25vw;"
+                        placeholder="Search...">
+                </li>
+                <li class="nav-item dropdown pl-2">
+                    <button class="btn btn-outline-secondary py-2" id="clean_filter">
+                        <i class="fa fa-broom"></i>
+                    </button>
+                </li>
+            </ul>
+            <a href="{% url 'reservations_add' %}" class="ml-auto">
+                <button class="btn btn-outline-warning my-2 my-sm-0 py-2">Add <i class="fa fa-plus"></i></button>
+            </a>
+        </div>
+    </nav>
+</header>
+<main class="py-4">
+    <div class="container-fluid">
+        <table class="overflow-auto w-100" id="inventory">
+            <thead>
+                <tr>
+                    <th class="col-sm-1">Item</th>
+                    <th class="col-sm-1">Klient</th>
+                    <th class="col-sm-2">Kalendář</th>
+                    <th class="col-sm-1">Akce</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr class="altering">
+                    <td class="col-sm-1" data-id="item_name" data-value="{{ reservation.item }}">{{ reservation.item }}</td>
+                    <td class="col-sm-1" data-id="item_client" data-value="{{ reservation.client }}">{{ reservation.client }}</td>
+                    <td class="calendar col-sm-2">
+                        <div class="calendar-container mx-0" data-item-id="{{ reservation.pk }}">
+                            <div>
+                                <button onclick="prevMonth(this)">⬅️</button>
+                                <span class="month-year"></span>
+                                <button onclick="nextMonth(this)">➡️</button>
+                            </div>
+                            <table class="calendar">
+                                <thead>
+                                    <tr>
+                                        <th>Po</th><th>Út</th><th>St</th>
+                                        <th>Čt</th><th>Pá</th><th>So</th><th>Ne</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="calendar-body"></tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td>
+                        <form class="form-inline my-2 my-lg-0 py-2" id="reserve-form" method="get" action="{% url 'reservations_modify' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pk" value="{{ reservation.pk }}">
+                            <button class="btn btn-outline-warning my-2 my-sm-0 w-75" type="submit">Edit <i class="fa fa-edit"></i></button>
+                        </form>
+                        <form class="form-inline my-2 my-lg-0" id="reserve-form" method="get" action="{% url 'reservations_delete' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pk" value="{{ reservation.pk }}">
+                            <button class="btn btn-outline-danger my-2 my-sm-0 w-75" type="submit">Delete <i class="fa fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function update_filter(f) {
+        let filter = f ? f.value.toLowerCase() : "";
+        let rows = document.querySelectorAll("#inventory > tbody > tr");
+
+        rows.forEach(row => {
+            let titleElement = row.querySelector("[data-id='item_name']");
+            let titleText = titleElement ? titleElement.getAttribute("data-value").toLowerCase() : "";
+            let clientElement = row.querySelector("[data-id='item_client']");
+            let clientText = clientElement ? clientElement.getAttribute("data-value").toLowerCase() : "";
+
+            row.style.display = (titleText.includes(filter) || clientText.includes(filter)) ? "" : "none";
+        });
+    }
+
+    document.getElementById("tableFilter").addEventListener("keyup", function () {
+        update_filter(this);
+    });
+
+    document.querySelector("#clean_filter").addEventListener("click", function(event) {
+        let filterInput = document.getElementById("tableFilter");
+        filterInput.value = "";
+        update_filter(filterInput);
+    })
+
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".calendar-container").forEach(container => {
+            let itemId = container.getAttribute("data-item-id");
+            initCalendar(container, itemId);
+        });
+    });
+
+    function initCalendar(container, itemId) {
+        let currentDate = new Date();
+        let currentYear = currentDate.getFullYear();
+        let currentMonth = currentDate.getMonth();
+        let reservedDates = new Set();
+
+        fetchReservations(itemId, function (data) {
+            reservedDates = new Set(data.dates);
+            if(reservedDates.size > 0) {
+                currentDate = new Date(Date.parse(reservedDates.values().next().value, "yyyy-MM-dd"));
+                currentYear = currentDate.getFullYear();
+                currentMonth = currentDate.getMonth();
+            }
+            renderCalendar(container, currentYear, currentMonth, reservedDates);
+            container.dataset.year = currentYear;
+            container.dataset.month = currentMonth;
+        });
+
+    }
+
+    function fetchReservations(itemId, callback) {
+        fetch(`{% url 'api_reservation' %}?pk=${itemId}`)
+            .then(response => response.json())
+            .then(data => callback(data))
+            .catch(error => console.error("Error fetching reservations:", error));
+    }
+
+    function renderCalendar(container, year, month, reservedDates, clients) {
+        let calendarBody = container.querySelector(".calendar-body");
+        let monthYear = container.querySelector(".month-year");
+        calendarBody.innerHTML = "";
+
+        let firstDay = new Date(year, month, 1).getDay();
+        firstDay = (firstDay === 0) ? 6 : firstDay - 1;  // Shift Sunday (0) to Monday (1)
+
+        let lastDate = new Date(year, month + 1, 0).getDate();
+
+        let date = 1;
+        for (let i = 0; i < 6; i++) {
+            let row = document.createElement("tr");
+            if (date > lastDate) {
+                break;
+            }
+            for (let j = 0; j < 7; j++) {
+                let cell = document.createElement("td");
+                if (i === 0 && j < firstDay) {
+                    cell.innerHTML = "";
+                } else if (date > lastDate) {
+                    cell.innerHTML = "";
+                } else {
+                    let fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                    cell.innerHTML = date;
+                    if (reservedDates.has(fullDate)) {
+                        cell.classList.add("reserved");
+                        cell.style.backgroundColor = "red";
+                        cell.style.color = "white";
+                    }
+                    date++;
+                }
+                row.appendChild(cell);
+            }
+            calendarBody.appendChild(row);
+        }
+        monthYear.innerText = new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" });
+    }
+
+    function prevMonth(button) {
+        let container = button.closest(".calendar-container");
+        let year = parseInt(container.dataset.year);
+        let month = parseInt(container.dataset.month);
+        if (--month < 0) {
+            month = 11;
+            year--;
+        }
+        container.dataset.year = year;
+        container.dataset.month = month;
+        let itemId = container.getAttribute("data-item-id");
+        fetchReservations(itemId, function (data) {
+            renderCalendar(container, year, month, new Set(data.dates));
+        });
+    }
+
+    function nextMonth(button) {
+        let container = button.closest(".calendar-container");
+        let year = parseInt(container.dataset.year);
+        let month = parseInt(container.dataset.month);
+        if (++month > 11) {
+            month = 0;
+            year++;
+        }
+        container.dataset.year = year;
+        container.dataset.month = month;
+        let itemId = container.getAttribute("data-item-id");
+        fetchReservations(itemId, function (data) {
+            dates = data.dates;
+            renderCalendar(container, year, month, new Set(dates));
+        });
+    }
+</script>
+{% endblock %}

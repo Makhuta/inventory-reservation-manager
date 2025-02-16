@@ -1,0 +1,19 @@
+services:
+  inventory-manager:
+    image: ghcr.io/makhuta/inventory-reservation-manager
+    container_name: inventory-manager
+    ports:
+      - "80:80"
+    volumes:
+      - /path/to/your/database:${DATABASE_DIR}
+    build:
+      context: .
+      args:
+        IMAGES_DIR: ${IMAGES_DIR}
+    environment:
+      - DJANGO_USERNAME=${DJANGO_USERNAME}
+      - DJANGO_PASSWORD=${DJANGO_PASSWORD}
+      - DATABASE_DIR=${DATABASE_DIR}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY}
+    restart: unless-stopped

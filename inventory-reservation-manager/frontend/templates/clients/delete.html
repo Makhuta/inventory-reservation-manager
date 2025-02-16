@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Reservation Delete{% endblock %}
+
+{% block content %}
+<main class="py-4 h-100">
+    <div class="container h-100">
+        <div class="d-flex justify-content-center align-items-center vh-100 h-100">
+            <div class="col-md-4">
+                <div class="card shadow-lg">
+                    <div class="card-header text-center">
+                        <h3>Delete ?</h3>
+                        <h5>{{ client }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="pk" value="{{ client.pk }}">
+                            <button type="submit" class="btn btn-danger w-100 my-1">Yes</button>
+                            <a href="{% url 'clients' %}"><button type="button" class="btn btn-success w-100 my-1">No</button></a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

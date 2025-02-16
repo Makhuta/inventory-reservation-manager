@@ -1,0 +1,41 @@
+{% extends "core.html" %}
+{% load static %}
+
+{% block base %}
+<header>
+    <nav class="navbar navbar-expand-lg secondary-color navbar-light px-2">
+        <a class="navbar-brand accent-color" href="{% url 'index' %}"><h2 class="my-auto"><img src="{% static 'imgs/logo.png' %}" width="60" height="60" alt="IRM">IRM</h2></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link accent-color" href="{% url 'inventory' %}">
+                        Inventory
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link accent-color" href="{% url 'reservations' %}">
+                        Reservations
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link accent-color" href="{% url 'clients' %}">
+                        Clients
+                    </a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" id="logout-form" method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout <i class="fa fa-sign-out-alt"></i></button>
+            </form>
+        </div>
+    </nav>
+</header>
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+{% endblock %}

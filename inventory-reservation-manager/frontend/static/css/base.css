@@ -1,0 +1,86 @@
+:root{
+    --background-color: #030304;
+    --second-background-color: white;
+    --primary-color: #f5a9b8;
+    --secondary-color:  #5bcefa;
+    --tertiary-color:  #53bee9;
+    --blur-background: rgba(245, 169, 184, 0.58);
+    --accent-color: #fff;
+    /* --primary-color: green;
+    --secondary-color: gold;
+    --blur-background: rgba(86, 131, 36, 0.8);
+    --accent-color: olive; */
+    --topbar-height: 60px;
+    box-sizing: border-box;
+}
+
+
+html, body {
+    height: 100% !important;
+    margin: 0;
+}
+
+body {
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255,255,255,0.3);
+  background-blend-mode: lighten;
+}
+
+.bg-color {
+    background-color: var(--background-color) !important;
+}
+
+.second-bg-color {
+    background-color: var(--second-background-color) !important;
+}
+
+.primary-color {
+    background-color: var(--primary-color) !important;
+}
+
+.secondary-color {
+    background-color: var(--secondary-color) !important;
+}
+
+.tertiary-color {
+    background-color: var(--tertiary-color) !important;
+}
+
+.accent-color {
+    color: var(--accent-color) !important;
+}
+
+table:not(table table) {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+thead, tbody > tr.altering:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.custom-date {
+    background-color: #f0f8ff;
+}
+
+.loader-parent {
+    --loader-size: 80px;
+    --loader-color: #3498db;
+    --loader-bg: #f3f3f3;
+}
+
+.loader {
+    border: calc(var(--loader-size) * 0.133) solid var(--loader-bg); /* 16px for 120px */
+    border-top: calc(var(--loader-size) * 0.133) solid var(--loader-color);
+    border-radius: 50%;
+    width: var(--loader-size);
+    height: var(--loader-size);
+    animation: spin 2s linear infinite;
+  }
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

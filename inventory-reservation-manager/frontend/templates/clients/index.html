@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reservations{% endblock %}
+
+{% block content %}
+<header>
+    <nav class="navbar navbar-expand-lg tertiary-color accent-color px-2">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item dropdown pl-2">
+                    <input type="text" id="tableFilter" class="form-control py-2" style="min-width: 25vw;"
+                        placeholder="Search...">
+                </li>
+                <li class="nav-item dropdown pl-2">
+                    <button class="btn btn-outline-secondary py-2" id="clean_filter">
+                        <i class="fa fa-broom"></i>
+                    </button>
+                </li>
+            </ul>
+            <a href="{% url 'clients_add' %}" class="ml-auto">
+                <button class="btn btn-outline-warning my-2 my-sm-0 py-2">Add <i class="fa fa-plus"></i></button>
+            </a>
+        </div>
+    </nav>
+</header>
+<main class="py-4">
+    <div class="container-fluid">
+        <table class="overflow-auto w-100" id="inventory">
+            <thead>
+                <tr>
+                    <th class="col-sm-1">Jméno</th>
+                    <th class="col-sm-1">Telefon</th>
+                    <th class="col-sm-2">Email</th>
+                    <th class="col-sm-1">Akce</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr class="altering">
+                    <td class="col-sm-1" data-id="item_name" data-value="{{ client.name }}">{{ client.name }}</td>
+                    <td class="col-sm-1" data-id="item_phone" data-value="{{ client.phone }}">{{ client.phone }}</td>
+                    <td class="col-sm-1" data-id="item_email" data-value="{{ client.email }}">{{ client.email }}</td>
+                    <td>
+                        <form class="form-inline my-2 my-lg-0 py-2" id="reserve-form" method="get" action="{% url 'clients_modify' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pk" value="{{ client.pk }}">
+                            <button class="btn btn-outline-warning my-2 my-sm-0 w-75" type="submit">Edit <i class="fa fa-edit"></i></button>
+                        </form>
+                        <form class="form-inline my-2 my-lg-0" id="reserve-form" method="get" action="{% url 'clients_delete' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pk" value="{{ client.pk }}">
+                            <button class="btn btn-outline-danger my-2 my-sm-0 w-75" type="submit">Delete <i class="fa fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function update_filter(f) {
+        let filter = f ? f.value.toLowerCase() : "";
+        let rows = document.querySelectorAll("#inventory > tbody > tr");
+
+        rows.forEach(row => {
+            let nameElement = row.querySelector("[data-id='item_name']");
+            let nameText = nameElement ? nameElement.getAttribute("data-value").toLowerCase() : "";
+            let phoneElement = row.querySelector("[data-id='item_phone']");
+            let phoneText = phoneElement ? phoneElement.getAttribute("data-value").toLowerCase() : "";
+            let emailElement = row.querySelector("[data-id='item_email']");
+            let emailText = emailElement ? emailElement.getAttribute("data-value").toLowerCase() : "";
+
+            row.style.display = (nameText.includes(filter) || phoneText.includes(filter) || emailText.includes(filter)) ? "" : "none";
+        });
+    }
+
+    document.getElementById("tableFilter").addEventListener("keyup", function () {
+        update_filter(this);
+    });
+
+    document.querySelector("#clean_filter").addEventListener("click", function(event) {
+        let filterInput = document.getElementById("tableFilter");
+        filterInput.value = "";
+        update_filter(filterInput);
+    })
+</script>
+{% endblock %}

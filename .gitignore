@@ -1,0 +1,6 @@
+# Generated
+*__pycache__
+*db.sqlite3
+*migrations/
+inventory-reservation-manager/static/*
+venv/*

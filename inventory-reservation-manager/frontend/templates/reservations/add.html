@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Reservation Add{% endblock %}
+
+{% block content %}
+<main class="py-4">
+    <div class="container">
+        <form method="post" class="p-2 rounded tertiary-color">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.item.id_for_label }}">{{ form.item.label }}</label>
+                {{ form.item }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.client.id_for_label }}">{{ form.client.label }}</label>
+                {{ form.client }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.start.id_for_label }}">{{ form.start.label }}</label>
+                {{ form.start }}
+                <small class="form-text text-muted">{{ form.start.help_text }}</small>
+            </div>
+            <div class="form-group">
+                <label for="{{ form.end.id_for_label }}">{{ form.end.label }}</label>
+                {{ form.end }}
+                <small class="form-text text-muted">{{ form.end.help_text }}</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Reserve</button>
+        </form>
+        {% for error in errors %}
+            <div class="alert alert-danger mt-2">{{ error }}</div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

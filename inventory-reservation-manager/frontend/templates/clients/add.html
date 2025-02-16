@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Add Client{% endblock %}
+
+{% block content %}
+<main class="py-4">
+    <div class="container">
+        <form method="post" class="p-2 rounded tertiary-color">
+            {% csrf_token %}
+
+            <!-- Name -->
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name }}
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                {{ form.phone }}
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                {{ form.email }}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Client</button>
+        </form>
+
+        {% if form.errors %}
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <div class="alert alert-danger mt-2">{{ field|title }}: {{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Item{% endblock %}
+
+{% block content %}
+<main class="py-4">
+    <div class="container">
+        <form method="post" enctype="multipart/form-data" class="p-2 rounded tertiary-color">
+            {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ item.pk }}">
+            
+            <!-- Name -->
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name }}
+            </div>
+
+            <!-- Inventory Number -->
+            <div class="form-group">
+                <label for="{{ form.inventory_number.id_for_label }}">{{ form.inventory_number.label }}</label>
+                {{ form.inventory_number }}
+            </div>
+
+            <!-- Image Upload & Preview -->
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">{{ form.image.label }}</label><br>
+                
+                {% if form.instance.image %}
+                    <div class="mb-2">
+                        <img src="{{ form.instance.image.url }}" alt="Current Image" class="img-thumbnail" style="max-width: 200px;">
+                    </div>
+                {% endif %}
+                
+                {{ form.image }}
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Item</button>
+        </form>
+
+        {% if form.errors %}
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <div class="alert alert-danger mt-2">{{ field|title }}: {{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
