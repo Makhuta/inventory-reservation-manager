@@ -1,0 +1,68 @@
+.search-bar {
+    width: 50%;
+}
+
+@media (min-width: 992px) {
+    .search-bar {
+        width: 25%;
+    }
+}
+
+
+
+td.td-center {
+    vertical-align: middle;  /* Vertically align content */
+    padding: 8px;  /* Adjust padding to ensure the content is nicely spaced */
+    white-space: nowrap;  /* Prevent text wrapping */
+    text-overflow: ellipsis;  /* Show ellipsis for overflowed content */
+    overflow: hidden;  /* Hide overflowing content */
+}
+
+
+th.calendar, td.calendar {
+    font-size: 7px; /* Default for mobile */
+    padding: 4px; /* Padding to ensure readability */
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    th, td {
+        font-size: 10px;  /* Larger font size for tablets */
+    }
+    th.calendar, td.calendar {
+        font-size: 5px;  /* Larger font size for tablets */
+    }
+    .table-img {
+        max-height: 160px;  /* Increase image size for tablets */
+    }
+    .form-action-inline {
+        margin-bottom: 10px;  /* Add spacing between forms */
+    }
+    .form-action-inline button {
+        max-width: 100%;  /* Allow buttons to resize on small screens */
+    }
+    .td-calendar {
+        width: 160px !important;
+    }
+}
+
+@media (min-width: 992px) {
+    th, td {
+        font-size: 18px;  /* Even larger font size for desktops */
+    }
+    th.calendar, td.calendar {
+        font-size: 9px;  /* Even larger font size for desktops */
+    }
+    .table-img {
+        max-height: 200px;  /* Larger image size for desktops */
+    }
+    .td-calendar {
+        width: 200px !important;
+    }
+}
+
+th, td {
+    white-space: nowrap; /* Prevent wrapping inside cells */
+    text-overflow: ellipsis; /* Show ellipsis for overflowed content */
+    overflow: hidden; /* Hide overflowing content */
+}

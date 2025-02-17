@@ -1,0 +1,19 @@
+.search-bar {
+    width: 50%;
+}
+
+@media (min-width: 992px) {
+    .search-bar {
+        width: 25%;
+    }
+}
+
+
+
+td.td-center {
+    vertical-align: middle;  /* Vertically align content */
+    padding: 8px;  /* Adjust padding to ensure the content is nicely spaced */
+    white-space: nowrap;  /* Prevent text wrapping */
+    text-overflow: ellipsis;  /* Show ellipsis for overflowed content */
+    overflow: hidden;  /* Hide overflowing content */
+}
