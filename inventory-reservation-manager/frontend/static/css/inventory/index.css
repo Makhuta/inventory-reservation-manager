@@ -130,3 +130,25 @@ th, td {
 .table {
     table-layout: auto; /* Allow columns to resize based on content */
 }
+
+.reserved {
+    font-weight: bold;
+    position: relative;
+    overflow: visible;
+}
+
+.reserved:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: black;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.9em;
+    z-index: 10;
+    opacity: 0.9;
+}
