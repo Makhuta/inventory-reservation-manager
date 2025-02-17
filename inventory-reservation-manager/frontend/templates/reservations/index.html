@@ -30,67 +30,6 @@
     </nav>
 </header>
 
-
-<!--
-<main class="py-4">
-    <div class="container-fluid">
-        <table class="overflow-auto w-100" id="inventory">
-            <thead>
-                <tr>
-                    <th class="col-sm-1">Item</th>
-                    <th class="col-sm-1">Klient</th>
-                    <th class="col-sm-2">Kalendář</th>
-                    <th class="col-sm-1">Akce</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reservation in reservations %}
-                <tr class="altering">
-                    <td class="col-sm-1" data-id="item_name" data-value="{{ reservation.item }}">{{ reservation.item }}</td>
-                    <td class="col-sm-1" data-id="item_client" data-value="{{ reservation.client }}">{{ reservation.client }}</td>
-                    <td class="calendar col-sm-2">
-                        <div class="calendar-container mx-0" data-item-id="{{ reservation.pk }}">
-                            <div>
-                                <button onclick="prevMonth(this)">⬅️</button>
-                                <span class="month-year"></span>
-                                <button onclick="nextMonth(this)">➡️</button>
-                            </div>
-                            <table class="calendar">
-                                <thead>
-                                    <tr>
-                                        <th>Po</th><th>Út</th><th>St</th>
-                                        <th>Čt</th><th>Pá</th><th>So</th><th>Ne</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="calendar-body"></tbody>
-                            </table>
-                        </div>
-                    </td>
-                    <td>
-                        <form class="form-inline my-2 my-lg-0 py-2" id="reserve-form" method="get" action="{% url 'reservations_modify' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{ reservation.pk }}">
-                            <button class="btn btn-outline-warning my-2 my-sm-0 w-75" type="submit">Edit <i class="fa fa-edit"></i></button>
-                        </form>
-                        <form class="form-inline my-2 my-lg-0" id="reserve-form" method="get" action="{% url 'reservations_delete' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{ reservation.pk }}">
-                            <button class="btn btn-outline-danger my-2 my-sm-0 w-75" type="submit">Delete <i class="fa fa-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</main>
--->
-
-
-
-
-
 <main class="py-4">
     <div class="container-fluid">
         <div class="table-responsive">
@@ -110,7 +49,7 @@
                         <td class="td-center text-center" data-id="item_client" data-value="{{ reservation.client }}">{{ reservation.client }}</td>
                         <td class="td-center text-center">
                             <div class="calendar-container mx-0 " data-item-id="{{ reservation.pk }}">
-                                <div class="w-100">
+                                <div class="w-100 d-flex justify-content-between">
                                     <button onclick="prevMonth(this)"><i class="fas fa-arrow-left"></i></button>
                                     <span class="month-year"></span>
                                     <button onclick="nextMonth(this)"><i class="fas fa-arrow-right"></i></button>

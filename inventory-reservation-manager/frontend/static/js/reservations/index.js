@@ -18,14 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 currentYear = currentDate.getFullYear();
                 currentMonth = currentDate.getMonth();
             }
-            renderCalendar(container, currentYear, currentMonth, reservedDates);
+            renderCalendar(container, currentYear, currentMonth, reservedDates, data.client);
             container.dataset.year = currentYear;
             container.dataset.month = currentMonth;
         });
 
     }
 
-    function renderCalendar(container, year, month, reservedDates, clients) {
+    function renderCalendar(container, year, month, reservedDates, client) {
         let calendarBody = container.querySelector(".calendar-body");
         let monthYear = container.querySelector(".month-year");
         calendarBody.innerHTML = "";
@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     let fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
                     cell.innerHTML = date;
                     if (reservedDates.has(fullDate)) {
+                        cell.setAttribute('title', client)
                         cell.classList.add("reserved");
                         cell.style.backgroundColor = "red";
                         cell.style.color = "white";
@@ -77,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
         container.dataset.month = month;
         let itemId = container.getAttribute("data-item-id");
         fetchReservations(itemId, function (data) {
-            renderCalendar(container, year, month, new Set(data.dates));
+            renderCalendar(container, year, month, new Set(data.dates), data.client);
         });
     }
 
@@ -94,6 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let itemId = container.getAttribute("data-item-id");
         fetchReservations(itemId, function (data) {
             dates = data.dates;
-            renderCalendar(container, year, month, new Set(dates));
+            renderCalendar(container, year, month, new Set(dates), data.client);
         });
     }

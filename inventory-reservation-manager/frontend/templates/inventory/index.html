@@ -5,6 +5,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'css/inventory/index.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.15/main.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -51,8 +52,8 @@
                         <td class="td-center text-center" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">{{ item.inventory_number }}</td>
                         <td class="td-center text-center"><img src="{{item.image.url}}" alt="{{item.image.name}}" class="table-img"></td>
                         <td class="td-center text-center">
-                            <div class="calendar-container mx-0 " data-item-id="{{ item.pk }}">
-                                <div class="w-100">
+                            <div class="calendar-container mx-0" data-item-id="{{ item.pk }}">
+                                <div class="w-100 d-flex justify-content-between">
                                     <button onclick="prevMonth(this)"><i class="fas fa-arrow-left"></i></button>
                                     <span class="month-year"></span>
                                     <button onclick="nextMonth(this)"><i class="fas fa-arrow-right"></i></button>
@@ -101,6 +102,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 <script src="{% static 'js/inventory/filter.js' %}"></script>
 <script src="{% static 'js/inventory/index.js' %}"></script>
 <script>

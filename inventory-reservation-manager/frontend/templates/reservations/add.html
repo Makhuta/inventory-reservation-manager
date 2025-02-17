@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Reservation Add{% endblock %}
+
+{% block styles %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.15/main.min.css" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <main class="py-4">
@@ -15,15 +20,18 @@
                 <label for="{{ form.client.id_for_label }}">{{ form.client.label }}</label>
                 {{ form.client }}
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label for="{{ form.start.id_for_label }}">{{ form.start.label }}</label>
                 {{ form.start }}
                 <small class="form-text text-muted">{{ form.start.help_text }}</small>
             </div>
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label for="{{ form.end.id_for_label }}">{{ form.end.label }}</label>
                 {{ form.end }}
                 <small class="form-text text-muted">{{ form.end.help_text }}</small>
+            </div>
+            <div class="form-group">
+                <div id="calendar"></div>
             </div>
             <button type="submit" class="btn btn-primary">Reserve</button>
         </form>
@@ -32,4 +40,20 @@
         {% endfor %}
     </div>
 </main>
+{% endblock %}
+
+
+{% block scripts %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+<script src="{% static 'js/reservations/add.js' %}"></script>
+<script>
+    const itemSelect = document.querySelector("[name='{{ form.item.name }}']"); // The item dropdown
+
+    function fetchReservations(itemId, callback) {
+        fetch(`{% url 'api_item_reservations' %}?pk=${itemId}`)
+            .then(response => response.json())
+            .then(data => callback(data))
+            .catch(error => console.error("Error fetching reservations:", error));
+    }
+</script>
 {% endblock %}

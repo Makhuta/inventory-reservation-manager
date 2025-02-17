@@ -41,4 +41,4 @@ def reservation(request):
         reserved_dates.append(d)
         current_date += DT.timedelta(days=1)
 
-    return JsonResponse({'dates': reserved_dates})
+    return JsonResponse({'dates': reserved_dates, 'client': f'{rezerfations.client}'})
