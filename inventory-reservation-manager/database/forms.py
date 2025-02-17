@@ -28,6 +28,8 @@ class ClientForm(forms.ModelForm):
             'email': 'Email Address',
         }
 
+class CSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label='Upload CSV file')
 
 class ReservationForm(forms.ModelForm):
     class Meta:

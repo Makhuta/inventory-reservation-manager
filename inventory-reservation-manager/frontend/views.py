@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 import datetime as DT
 from django.http import JsonResponse
+import csv
 
 from .functions import custom_render
 
 from database.models import Item, Client, Reservation
-from database.forms import ItemForm, ClientForm, ReservationForm
+from database.forms import ItemForm, ClientForm, ReservationForm, CSVUploadForm
 
 
 # Create your views here.
@@ -171,6 +172,36 @@ def clients_add(request):
                     e.append(error)
             return custom_render(request, "clients/add.html", {'form': ClientForm(request.POST), 'errors': e})
     return custom_render(request, "clients/add.html", {'form': ClientForm(), 'errors': []})
+
+
+def handle_uploaded_file(file):
+    decoded_file = file.read().decode('utf-8')
+    csv_data = csv.reader(decoded_file.splitlines(), delimiter=";")
+
+    for (name, phone, email) in csv_data:
+        if not name or not phone or not email:
+            continue
+
+        client = Client()
+        client.name = name
+        client.phone = phone
+        client.email = email
+        client.save()
+
+@login_required
+def clients_import(request):
+    if request.method == 'POST' and request.FILES['csv_file']:
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['csv_file'])
+            return redirect("clients")
+        else:
+            e = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    e.append(error)
+            return custom_render(request, "clients/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': e})
+    return custom_render(request, "clients/import.html", {'form': CSVUploadForm(), 'errors': []})
 
 @login_required
 def clients_modify(request):

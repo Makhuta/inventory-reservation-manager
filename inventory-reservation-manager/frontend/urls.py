@@ -23,6 +23,7 @@ urlpatterns = [
 
     path("clients", views.clients, name="clients"),
     path("clients/add", views.clients_add, name="clients_add"),
+    path("clients/import", views.clients_import, name="clients_import"),
     path("clients/modify", views.clients_modify, name="clients_modify"),
     path("clients/delete", views.clients_delete, name="clients_delete"),
 ]
