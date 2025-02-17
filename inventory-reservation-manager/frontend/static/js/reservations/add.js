@@ -1,3 +1,19 @@
+const userColors = {}; // Store assigned colors
+const colors = [
+    "#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#FFB833", "#8A33FF", "#33FFF5",
+    "#FF3333", "#33FF8A", "#5733FF", "#FF8A33", "#A833FF", "#33FFA8", "#FF33F5",
+    "#B8FF33", "#FF338A", "#338AFF", "#8AFF33", "#F5FF33", "#33A8FF", "#FF33C2",
+    "#33FF33", "#FF8333", "#3385FF", "#85FF33", "#FF3385", "#3383FF", "#83FF33",
+    "#FF8335", "#33FF83", "#3385FF"
+];
+
+function getUserColor(name) {
+    if (!userColors[name]) {
+        userColors[name] = colors[Object.keys(userColors).length % colors.length];
+    }
+    return userColors[name];
+}
+
 function addOneDay(dateStr) {
     const date = new Date(dateStr);
 
@@ -29,8 +45,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 title: datas.clients[date], 
                 start: date, 
                 allDay: true,
-                backgroundColor: "red", 
-                borderColor: "red"
+                backgroundColor: getUserColor(datas.clients[date]), 
+                borderColor: getUserColor(datas.clients[date])
             })),
             dateClick: function (info) {
                 if (selectedEvent) {
