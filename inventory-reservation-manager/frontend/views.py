@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404, get_list_or_40
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 import datetime as DT
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import csv
 
 from .functions import custom_render
@@ -16,6 +16,24 @@ from database.forms import ItemForm, ClientForm, ReservationForm, CSVUploadForm
 def index(request):
     return redirect('inventory')
     return custom_render(request, "index.html")
+
+@login_required
+def download(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="reservations.csv"'
+
+    writer = csv.writer(response)
+
+    # Add a header row
+    writer.writerow(["Jméno Klient", "Telefon", "Email", "Jméno Item", "IČ", "Popis", "Od", "Do"])  # Adjust columns as needed
+
+    # Add some sample data (optional, remove if not needed)
+    for reservation in Reservation.objects.all():
+        client = reservation.client
+        item = reservation.item
+        writer.writerow([client.name, client.phone, client.email, item.name, item.inventory_number, item.description, reservation.start, reservation.end])
+
+    return response
 
 @login_required
 def my_logout(request):

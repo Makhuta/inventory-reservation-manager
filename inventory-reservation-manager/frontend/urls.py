@@ -7,6 +7,7 @@ urlpatterns = [
     path("accounts/login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
     path("accounts/logout/", views.my_logout, name="logout"),
     path("", views.index, name="index"),
+    path("download", views.download, name="download"),
 
 
     path("inventory", views.inventory, name="inventory"),
