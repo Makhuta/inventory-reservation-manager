@@ -43,6 +43,7 @@
                 <thead class="w-100">
                     <tr class="w-100">
                         <th class="text-center td-name">Jméno</th>
+                        <th class="text-center td-stocked">Na skladě</th>
                         <th class="text-center td-ic">IČ</th>
                         <th class="text-center td-image">Fotka</th>
                         <th class="text-center td-calendar">Kalendář</th>
@@ -54,6 +55,13 @@
                     {% for item in items %}
                     <tr>
                         <td class="td-center text-center" data-id="item_name" data-value="{{ item.name }}">{{ item.name }}</td>
+                        <td class="td-center text-center" data-id="item_stocked" data-value="{{ item.stocked }}">
+                            {% if item.stocked %}
+                            Ano
+                            {% else %}
+                            Ne
+                            {% endif %}
+                        </td>
                         <td class="td-center text-center" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">{{ item.inventory_number }}</td>
                         <td class="td-center text-center"><img src="{{item.image.url}}" alt="{{item.image.name}}" class="table-img"></td>
                         <td class="td-center text-center">

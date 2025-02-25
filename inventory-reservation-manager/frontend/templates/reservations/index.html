@@ -38,6 +38,7 @@
                     <tr class="w-100">
                         <th class="text-center td-item">Item</th>
                         <th class="text-center td-client">Klient</th>
+                        <th class="text-center td-returned">Vráceno</th>
                         <th class="text-center td-calendar">Kalendář</th>
                         <th class="text-center td-action">Akce</th>
                     </tr>
@@ -47,6 +48,13 @@
                     <tr>
                         <td class="td-center text-center" data-id="item_name" data-value="{{ reservation.item }}">{{ reservation.item }}</td>
                         <td class="td-center text-center" data-id="item_client" data-value="{{ reservation.client }}">{{ reservation.client }}</td>
+                        <td class="td-center text-center" data-id="item_returned" data-value="{{ reservation.returned }}">
+                            {% if reservation.returned %}
+                            Ano
+                            {% else %}
+                            Ne
+                            {% endif %}
+                        </td>
                         <td class="td-center text-center">
                             <div class="calendar-container mx-0 " data-item-id="{{ reservation.pk }}">
                                 <div class="w-100 d-flex justify-content-between">
@@ -71,6 +79,15 @@
                             </div>
                         </td>
                         <td class="td-actions text-center align-middle">
+                            <form class="form-action-inline my-2 my-lg-0 w-100" id="reserve-form" method="get" action="{% url 'reservations_return' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="pk" value="{{ reservation.pk }}">
+                                {% if reservation.returned %}
+                                <button class="btn btn-outline-secondary w-100" type="submit">Odvrátit <i class="fa fa-truck"></i></button>
+                                {% else %}
+                                <button class="btn btn-outline-primary w-100" type="submit">Vrátit <i class="icon-flipped fa fa-truck"></i></button>
+                                {% endif %}
+                            </form>
                             <form class="form-action-inline my-2 my-lg-0 w-100 py-2" id="reserve-form" method="get" action="{% url 'reservations_modify' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="pk" value="{{ reservation.pk }}">

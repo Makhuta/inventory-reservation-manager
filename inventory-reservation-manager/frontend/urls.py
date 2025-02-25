@@ -18,6 +18,7 @@ urlpatterns = [
 
     path("reservations", views.reservations, name="reservations"),
     path("reservations/add", views.reservations_add, name="reservations_add"),
+    path("reservations/return", views.reservations_return, name="reservations_return"),
     path("reservations/modify", views.reservations_modify, name="reservations_modify"),
     path("reservations/delete", views.reservations_delete, name="reservations_delete"),
 

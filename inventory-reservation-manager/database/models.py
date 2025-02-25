@@ -21,6 +21,12 @@ class Item(models.Model):
     image = models.ImageField(upload_to=get_image_filename, max_length=100, default=default_place_pics)
     description = models.CharField(max_length=1024)
 
+    @property
+    def stocked(self):
+        rezerfations = self.reservations.all()
+        today_date = date_now().date()
+        return all([r.returned for r in rezerfations if not(r.end > today_date and r.start > today_date)])
+    
     def __str__(self):
         return self.name
 
@@ -54,6 +60,7 @@ class Client(models.Model):
 class Reservation(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='reservations')
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='reservations')
+    returned = models.BooleanField(default=False)
     start = models.DateField(default=date_now)
     end = models.DateField(default=(date_now() + date_td(days=7)))
 

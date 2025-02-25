@@ -134,6 +134,17 @@ def reservations_add(request):
     return custom_render(request, "reservations/add.html", {'form': ReservationForm(initial=initial), 'errors': []})
 
 @login_required
+def reservations_return(request):
+    if request.method == 'GET':
+        pk = request.GET.get("pk")
+        if pk:
+            rezerfation = Reservation.objects.get(pk=pk)
+            rezerfation.returned = not rezerfation.returned
+            rezerfation.save()
+    return redirect('reservations')
+
+
+@login_required
 def reservations_modify(request):
     if request.method == 'POST':
         pk = request.GET.get("pk")
