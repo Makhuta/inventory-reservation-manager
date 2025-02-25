@@ -57,7 +57,11 @@ CMD sh -c " \
     mkdir -p \"$IMAGES_DIR\" && \
     chmod -R 755 \"$IMAGES_DIR\" && \
     # Make database migrations \
-    python manage.py makemigrations database frontend && \
+    python manage.py makemigrations database frontend api && \
+    # Run database migrations \
+    python manage.py migrate && \
+    # Make database migrations \
+    python manage.py makemigrations database frontend api && \
     # Run database migrations \
     python manage.py migrate && \
     # Create superuser if username and password are passed as environment variables \
