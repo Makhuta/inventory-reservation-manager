@@ -24,14 +24,12 @@ def download(request):
 
     writer = csv.writer(response)
 
-    # Add a header row
-    writer.writerow(["Jméno Klient", "Telefon", "Email", "Jméno Item", "IČ", "Popis", "Od", "Do"])  # Adjust columns as needed
+    writer.writerow(["Jméno Klient", "Telefon", "Email", "Jméno Item", "IČ", "Popis", "Od", "Do", "Vráceno"])
 
-    # Add some sample data (optional, remove if not needed)
     for reservation in Reservation.objects.all():
         client = reservation.client
         item = reservation.item
-        writer.writerow([client.name, client.phone, client.email, item.name, item.inventory_number, item.description, reservation.start, reservation.end])
+        writer.writerow([client.name, client.phone, client.email, item.name, item.inventory_number, item.description, reservation.start, reservation.end, "Ano" if reservation.returned else "Ne"])
 
     return response
 
