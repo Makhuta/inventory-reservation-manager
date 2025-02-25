@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now as date_now
 from django.contrib.auth import logout
 import datetime as DT
 from django.http import JsonResponse, HttpResponse
@@ -20,7 +21,7 @@ def index(request):
 @login_required
 def download(request):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
-    response['Content-Disposition'] = 'attachment; filename="reservations.csv"'
+    response['Content-Disposition'] = f'attachment; filename="reservations ({date_now().strftime("%d.%m.%Y %H:%M:%S")}).csv"'
 
     writer = csv.writer(response)
 
