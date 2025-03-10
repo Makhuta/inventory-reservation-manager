@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Add Client{% endblock %}
+
+{% block content %}
+<main class="py-4">
+    <div class="container">
+        <h3>Clients</h3>
+        <form method="post" action="{% url 'clients_confirm_import' %}">
+            {% csrf_token %}
+            
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" name="remove_first_row" id="remove_first_row">
+                <label class="form-check-label" for="remove_first_row">Remove first row (header)</label>
+            </div>
+
+            {% if data %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            {% for col_index in data.0|length|get_range %}
+                                <th>
+                                    <select class="form-control" name="col_{{ col_index }}">
+                                        <option value="">Ignore</option>
+                                        {% for field in fields %}
+                                            <option value="{{ field.value }}">{{ field.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                            <tr>
+                                {% for col in row %}
+                                    <td>{{ col }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <button type="submit" class="btn btn-primary">Confirm & Save</button>
+            {% else %}
+                <p>No data available.</p>
+            {% endif %}
+        </form>
+
+        {% if form.errors %}
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <div class="alert alert-danger mt-2">{{ field|title }}: {{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

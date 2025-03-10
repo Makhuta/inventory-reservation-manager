@@ -5,6 +5,8 @@ from django.contrib.auth import logout
 import datetime as DT
 from django.http import JsonResponse, HttpResponse
 import csv
+from django.core.cache import cache
+from django.template.defaulttags import register
 
 from .functions import custom_render
 
@@ -21,7 +23,7 @@ def index(request):
 @login_required
 def download(request):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
-    response['Content-Disposition'] = f'attachment; filename="reservations ({date_now().strftime("%d.%m.%Y %H:%M:%S")}).csv"'
+    response['Content-Disposition'] = f'attachment; filename="inventory reservations view ({date_now().strftime("%d.%m.%Y %H:%M:%S")}).csv"'
 
     writer = csv.writer(response)
 
@@ -61,6 +63,94 @@ def item_add(request):
                     e.append(error)
             return custom_render(request, "inventory/add.html", {'form': ItemForm(request.POST), 'errors': e})
     return custom_render(request, "inventory/add.html", {'form': ItemForm(), 'errors': []})
+
+@login_required
+def items_import(request):
+    if request.method == 'POST' and request.FILES['csv_file']:
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['csv_file']
+            decoded_file = file.read().decode('utf-8-sig')
+            csv_data = list(csv.reader(decoded_file.splitlines(), delimiter=";"))
+
+            if not csv_data:
+                return custom_render(request, "inventory/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': ["Empty file"]})
+
+            cache.set('uploaded_csv', csv_data, timeout=600)
+
+            return custom_render(request, "inventory/preview.html", {
+                'data': csv_data,
+                'fields': [{'name': field.verbose_name, 'value': field.name} for field in Item._meta.local_fields if field.name != "image"]
+            })
+        else:
+            e = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    e.append(error)
+            return custom_render(request, "inventory/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': e})
+    return custom_render(request, "inventory/import.html", {'form': CSVUploadForm(), 'errors': []})
+
+@login_required
+def items_confirm_import(request):
+    if request.method == 'POST':
+        csv_data = cache.get('uploaded_csv')
+        if not csv_data:
+            return redirect('items_import')
+
+        remove_first_row = request.POST.get('remove_first_row', 'off') == 'on'
+        if remove_first_row:
+            csv_data = csv_data[1:]
+
+        field_mapping = {str(i): request.POST.get(f"col_{i}") for i in range(len(csv_data[0]))}
+
+        for row in csv_data:
+            item_data = {}
+
+            if 'id' not in field_mapping.values():
+                raise ValueError("CSV does not contain 'id' field in the mapping")
+
+            item_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
+            item_id = row[int(item_id_field_index)]
+
+            try:
+                for index, model_field in field_mapping.items():
+                    if model_field and model_field != 'id':
+                        item_data[model_field] = row[int(index)]
+            except Exception as e:
+                print(f"Error processing index {index}: {e}")
+
+            try:
+                item, created = Item.objects.get_or_create(id=item_id, defaults=item_data)
+
+                if not created:
+                    for model_field, value in item_data.items():
+                        setattr(item, model_field, value)
+                    item.save()
+
+            except Exception as e:
+                print(f"Error processing row {row}: {e}")
+
+        cache.delete('uploaded_csv')
+        return redirect("inventory")
+
+    return redirect("items_import")
+
+@login_required
+def items_download(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="items ({date_now().strftime("%d.%m.%Y %H:%M:%S")}).csv"'
+
+    writer = csv.writer(response, delimiter=";")
+
+    fields = [{'name': field.verbose_name, 'value': field.name} for field in Item._meta.local_fields if field.name != "image"]
+
+
+    writer.writerow([f.get("name") for f in fields])
+
+    for item in Item.objects.all():
+        writer.writerow([getattr(item, f["value"]) for f in fields])
+
+    return response
 
 @login_required
 def item_modify(request):
@@ -142,6 +232,102 @@ def reservations_return(request):
             rezerfation.save()
     return redirect('reservations')
 
+@login_required
+def reservations_import(request):
+    if request.method == 'POST' and request.FILES['csv_file']:
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['csv_file']
+            decoded_file = file.read().decode('utf-8-sig')
+            csv_data = list(csv.reader(decoded_file.splitlines(), delimiter=";"))
+
+            if not csv_data:
+                return custom_render(request, "reservations/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': ["Empty file"]})
+
+            cache.set('uploaded_csv', csv_data, timeout=600)
+
+            return custom_render(request, "reservations/preview.html", {
+                'data': csv_data,
+                'fields': [{'name': field.verbose_name, 'value': field.name} for field in Reservation._meta.local_fields]
+            })
+        else:
+            e = []
+            for field, errors in form.errors.reservations():
+                for error in errors:
+                    e.append(error)
+            return custom_render(request, "reservations/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': e})
+    return custom_render(request, "reservations/import.html", {'form': CSVUploadForm(), 'errors': []})
+
+@login_required
+def reservations_confirm_import(request):
+    if request.method == 'POST':
+        csv_data = cache.get('uploaded_csv')
+        if not csv_data:
+            return redirect('reservations_import')
+
+        remove_first_row = request.POST.get('remove_first_row', 'off') == 'on'
+        if remove_first_row:
+            csv_data = csv_data[1:]
+
+        field_mapping = {str(i): request.POST.get(f"col_{i}") for i in range(len(csv_data[0]))}
+
+        for row in csv_data:
+            item_data = {}
+
+            if 'id' not in field_mapping.values():
+                raise ValueError("CSV does not contain 'id' field in the mapping")
+
+            item_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
+            item_id = row[int(item_id_field_index)]
+
+            for index, model_field in field_mapping.items():
+                try:
+                    if model_field and model_field == 'item':
+                        item = Item.objects.filter(id=row[int(index)])
+                        if item.exists():
+                            item_data[model_field] = item.first()
+                    elif model_field and model_field == 'client':
+                        client = Client.objects.filter(id=row[int(index)])
+                        if client.exists():
+                            item_data[model_field] = client.first()
+                    elif model_field and model_field != 'id':
+                        item_data[model_field] = row[int(index)]
+                except Exception as e:
+                    print(f"Error processing index {index}: {e}")
+
+            try:
+                item, created = Reservation.objects.get_or_create(id=item_id, defaults=item_data)
+
+                if not created:
+                    for model_field, value in item_data.items():
+                        setattr(item, model_field, value)
+                    item.save()
+
+            except Exception as e:
+                print(f"Error processing row {row}: {e}")
+
+        cache.delete('uploaded_csv')
+        return redirect("reservations")
+
+    return redirect("reservations_import")
+
+
+@login_required
+def reservations_download(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="reservations ({date_now().strftime("%d.%m.%Y %H:%M:%S")}).csv"'
+
+    writer = csv.writer(response, delimiter=";")
+
+    fields = [{'name': field.verbose_name, 'value': field.name} for field in Reservation._meta.local_fields]
+
+
+    writer.writerow([f.get("name") for f in fields])
+
+    for reservation in Reservation.objects.all():
+        writer.writerow([(getattr(reservation, f["value"]) if f["value"] not in ["item", "client"] else getattr(reservation, f["value"]).id) for f in fields])
+
+    return response
 
 @login_required
 def reservations_modify(request):
@@ -201,28 +387,24 @@ def clients_add(request):
             return custom_render(request, "clients/add.html", {'form': ClientForm(request.POST), 'errors': e})
     return custom_render(request, "clients/add.html", {'form': ClientForm(), 'errors': []})
 
-
-def handle_uploaded_file(file):
-    decoded_file = file.read().decode('utf-8')
-    csv_data = csv.reader(decoded_file.splitlines(), delimiter=";")
-
-    for (name, phone, email) in csv_data:
-        if not name or not phone or not email:
-            continue
-
-        client = Client()
-        client.name = name
-        client.phone = phone
-        client.email = email
-        client.save()
-
 @login_required
 def clients_import(request):
     if request.method == 'POST' and request.FILES['csv_file']:
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            handle_uploaded_file(request.FILES['csv_file'])
-            return redirect("clients")
+            file = request.FILES['csv_file']
+            decoded_file = file.read().decode('utf-8-sig')
+            csv_data = list(csv.reader(decoded_file.splitlines(), delimiter=";"))
+
+            if not csv_data:
+                return custom_render(request, "clients/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': ["Empty file"]})
+
+            cache.set('uploaded_csv', csv_data, timeout=600)
+
+            return custom_render(request, "clients/preview.html", {
+                'data': csv_data,
+                'fields': [{'name': field.verbose_name, 'value': field.name} for field in Client._meta.local_fields]
+            })
         else:
             e = []
             for field, errors in form.errors.items():
@@ -230,6 +412,68 @@ def clients_import(request):
                     e.append(error)
             return custom_render(request, "clients/import.html", {'form': CSVUploadForm(request.POST, request.FILES), 'errors': e})
     return custom_render(request, "clients/import.html", {'form': CSVUploadForm(), 'errors': []})
+
+@login_required
+def clients_confirm_import(request):
+    if request.method == 'POST':
+        csv_data = cache.get('uploaded_csv')
+        if not csv_data:
+            return redirect('clients_import')
+
+        remove_first_row = request.POST.get('remove_first_row', 'off') == 'on'
+        if remove_first_row:
+            csv_data = csv_data[1:]
+
+        field_mapping = {str(i): request.POST.get(f"col_{i}") for i in range(len(csv_data[0]))}
+
+        for row in csv_data:
+            client_data = {}
+
+            if 'id' not in field_mapping.values():
+                raise ValueError("CSV does not contain 'id' field in the mapping")
+
+            client_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
+            client_id = row[int(client_id_field_index)].strip('\ufeff').strip()
+
+            try:
+                for index, model_field in field_mapping.items():
+                    if model_field and model_field != 'id':
+                        client_data[model_field] = row[int(index)]
+            except Exception as e:
+                print(f"Error processing index {index}: {e}")
+
+            try:
+                client, created = Client.objects.get_or_create(id=client_id, defaults=client_data)
+
+                if not created:
+                    for model_field, value in client_data.items():
+                        setattr(client, model_field, value)
+                    client.save()
+
+            except Exception as e:
+                print(f"Error processing row {row}: {e}")
+
+        cache.delete('uploaded_csv')
+        return redirect("clients")
+
+    return redirect("clients_import")
+
+@login_required
+def clients_download(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="clients ({date_now().strftime("%d.%m.%Y %H:%M:%S")}).csv"'
+
+    writer = csv.writer(response, delimiter=";")
+
+    fields = [{'name': field.verbose_name, 'value': field.name} for field in Client._meta.local_fields]
+
+
+    writer.writerow([f.get("name") for f in fields])
+
+    for client in Client.objects.all():
+        writer.writerow([getattr(client, f["value"]) for f in fields])
+
+    return response
 
 @login_required
 def clients_modify(request):
@@ -264,3 +508,15 @@ def clients_delete(request):
     if not pk:
         return redirect('clients')
     return custom_render(request, "clients/delete.html", { 'client': Client.objects.get(pk=pk) })
+
+
+
+
+
+
+
+
+
+@register.filter
+def get_range(value):
+    return range(value)

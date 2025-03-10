@@ -16,10 +16,10 @@ def default_place_pics():
     return "static/default.png"
 
 class Item(models.Model):
-    name = models.CharField(max_length=64)
-    inventory_number = models.CharField(max_length=32)
+    name = models.CharField(max_length=64, verbose_name="Name")
+    inventory_number = models.CharField(max_length=32, verbose_name="IČ")
     image = models.ImageField(upload_to=get_image_filename, max_length=100, default=default_place_pics)
-    description = models.CharField(max_length=1024)
+    description = models.CharField(max_length=1024, verbose_name="Description")
 
     @property
     def stocked(self):
@@ -33,10 +33,12 @@ class Item(models.Model):
     def save(self, *args, **kwargs):
         if self.image:
             if self.pk:
-                old_image = Item.objects.get(pk=self.pk).image
-                if old_image and old_image != self.image:
-                    if default_storage.exists(old_image.path):
-                        default_storage.delete(old_image.path)
+                item = Item.objects.filter(pk=self.pk)
+                if item.exists():
+                    old_image = item.first().image
+                    if old_image and old_image != self.image:
+                        if default_storage.exists(old_image.path):
+                            default_storage.delete(old_image.path)
         
         super().save(*args, **kwargs)
 
@@ -46,23 +48,20 @@ class Item(models.Model):
                 default_storage.delete(self.image.path)
         super().delete(*args, **kwargs)
 
-
-
 class Client(models.Model):
-    name = models.CharField(max_length=64)
-    phone = models.CharField(max_length=16)
-    email = models.EmailField()
+    name = models.CharField(max_length=64, verbose_name="Name")
+    phone = models.CharField(max_length=32, verbose_name="Phone")
+    email = models.EmailField(verbose_name="Email")
 
     def __str__(self):
         return f'{self.name} ({self.email})'
 
-
 class Reservation(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='reservations')
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='reservations')
-    returned = models.BooleanField(default=False)
-    start = models.DateField(default=date_now)
-    end = models.DateField(default=(date_now() + date_td(days=7)))
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='reservations', verbose_name="Item ID")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='reservations', verbose_name="Client ID")
+    returned = models.BooleanField(default=False, verbose_name="Returned")
+    start = models.DateField(default=date_now, verbose_name="Start date")
+    end = models.DateField(default=(date_now() + date_td(days=7)), verbose_name="End date")
 
     def __str__(self):
         return f'{self.item} - {self.client} ({self.start} -> {self.end})'

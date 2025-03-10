@@ -11,30 +11,43 @@
 {% block content %}
 <header>
     <nav class="navbar navbar-expand-lg tertiary-color accent-color px-2">
-        <div class="d-flex w-100 align-items-center">
-            <ul class="navbar-nav d-flex flex-row w-100">
-                <li class="nav-item ml-2 search-bar">
-                    <input type="text" id="tableFilter" class="form-control my-2 py-2 w-100" placeholder="Search...">
-                </li>
-                <li class="nav-item ml-2">
-                    <button class="btn btn-outline-secondary my-2 py-2" id="clean_filter">
-                        <i class="fa fa-broom"></i>
-                    </button>
-                </li>
-                <li class="nav-item ml-auto">
-                    <a href="{% url 'download' %}">
-                        <button class="btn btn-outline-success my-2 py-2">Download <i class="fa fa-plus"></i></button>
-                    </a>
-                </li>
-                <li class="nav-item ml-2">
-                    <a href="{% url 'item_add' %}">
-                        <button class="btn btn-outline-warning my-2 py-2">Add <i class="fa fa-plus"></i></button>
-                    </a>
-                </li>
-            </ul>
+        <div class="container-fluid w-100">
+            <div class="d-flex w-100 flex-column flex-lg-row">
+                <div class="d-flex w-100 mb-2 mb-lg-0 mr-2">
+                    <div class="nav-item search-bar flex-grow-1 w-100">
+                        <input type="text" id="tableFilter" class="form-control my-2 py-2 w-100" placeholder="Search...">
+                    </div>
+                    <div class="nav-item ml-2">
+                        <button class="btn btn-outline-secondary my-2 py-2" id="clean_filter">
+                            <i class="fa fa-broom"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex w-100 mf-2">
+                    <div class="nav-item w-100">
+                        <a href="{% url 'items_import' %}">
+                            <button class="btn btn-outline-warning my-2 py-2 w-100">Import <i class="fa fa-plus"></i></button>
+                        </a>
+                    </div>
+                    <div class="nav-item ml-2 w-100">
+                        <a href="{% url 'items_download' %}">
+                            <button class="btn btn-outline-success my-2 py-2 w-100">Download <i class="fa fa-plus"></i></button>
+                        </a>
+                    </div>
+                    <div class="nav-item ml-2 w-100">
+                        <a href="{% url 'item_add' %}">
+                            <button class="btn btn-outline-warning my-2 py-2 w-100">Add <i class="fa fa-plus"></i></button>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 </header>
+
+
+
 
 <main class="py-4">
     <div class="container-fluid">

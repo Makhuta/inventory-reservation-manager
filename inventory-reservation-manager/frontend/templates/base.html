@@ -29,7 +29,10 @@
             </ul>
             <form class="form-inline my-2 my-lg-0" id="logout-form" method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout <i class="fa fa-sign-out-alt"></i></button>
+                <a href="{% url 'download' %}">
+                    <button class="btn btn-outline-success my-2 py-2" type="button">Download <i class="fa fa-plus"></i></button>
+                </a>
+                <button class="btn btn-outline-success my-2 py-2 ml-2" type="submit">Logout <i class="fa fa-sign-out-alt"></i></button>
             </form>
         </div>
     </nav>
