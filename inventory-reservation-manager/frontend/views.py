@@ -106,29 +106,43 @@ def items_confirm_import(request):
         for row in csv_data:
             item_data = {}
 
-            if 'id' not in field_mapping.values():
-                raise ValueError("CSV does not contain 'id' field in the mapping")
+            if 'id' in field_mapping.values():
+                item_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
+                item_id = row[int(item_id_field_index)]
 
-            item_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
-            item_id = row[int(item_id_field_index)]
+                try:
+                    for index, model_field in field_mapping.items():
+                        if model_field and model_field != 'id':
+                            item_data[model_field] = row[int(index)]
+                except Exception as e:
+                    print(f"Error processing index {index}: {e}")
 
-            try:
-                for index, model_field in field_mapping.items():
-                    if model_field and model_field != 'id':
-                        item_data[model_field] = row[int(index)]
-            except Exception as e:
-                print(f"Error processing index {index}: {e}")
+                try:
+                    item, created = Item.objects.get_or_create(id=item_id, defaults=item_data)
 
-            try:
-                item, created = Item.objects.get_or_create(id=item_id, defaults=item_data)
+                    if not created:
+                        for model_field, value in item_data.items():
+                            setattr(item, model_field, value)
+                        item.save()
 
-                if not created:
+                except Exception as e:
+                    print(f"Error processing row {row}: {e}")
+            else:
+                try:
+                    for index, model_field in field_mapping.items():
+                        if model_field:
+                            item_data[model_field] = row[int(index)]
+                except Exception as e:
+                    print(f"Error processing index {index}: {e}")
+
+                try:
+                    item = Item()
                     for model_field, value in item_data.items():
                         setattr(item, model_field, value)
                     item.save()
 
-            except Exception as e:
-                print(f"Error processing row {row}: {e}")
+                except Exception as e:
+                    print(f"Error processing row {row}: {e}")
 
         cache.delete('uploaded_csv')
         return redirect("inventory")
@@ -274,37 +288,60 @@ def reservations_confirm_import(request):
         for row in csv_data:
             item_data = {}
 
-            if 'id' not in field_mapping.values():
-                raise ValueError("CSV does not contain 'id' field in the mapping")
+            if 'id' in field_mapping.values():
+                item_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
+                item_id = row[int(item_id_field_index)]
 
-            item_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
-            item_id = row[int(item_id_field_index)]
+                for index, model_field in field_mapping.items():
+                    try:
+                        if model_field and model_field == 'item':
+                            item = Item.objects.filter(id=row[int(index)])
+                            if item.exists():
+                                item_data[model_field] = item.first()
+                        elif model_field and model_field == 'client':
+                            client = Client.objects.filter(id=row[int(index)])
+                            if client.exists():
+                                item_data[model_field] = client.first()
+                        elif model_field and model_field != 'id':
+                            item_data[model_field] = row[int(index)]
+                    except Exception as e:
+                        print(f"Error processing index {index}: {e}")
 
-            for index, model_field in field_mapping.items():
                 try:
-                    if model_field and model_field == 'item':
-                        item = Item.objects.filter(id=row[int(index)])
-                        if item.exists():
-                            item_data[model_field] = item.first()
-                    elif model_field and model_field == 'client':
-                        client = Client.objects.filter(id=row[int(index)])
-                        if client.exists():
-                            item_data[model_field] = client.first()
-                    elif model_field and model_field != 'id':
-                        item_data[model_field] = row[int(index)]
+                    item, created = Reservation.objects.get_or_create(id=item_id, defaults=item_data)
+
+                    if not created:
+                        for model_field, value in item_data.items():
+                            setattr(item, model_field, value)
+                        item.save()
+
                 except Exception as e:
-                    print(f"Error processing index {index}: {e}")
+                    print(f"Error processing row {row}: {e}")
+            else:
+                for index, model_field in field_mapping.items():
+                    try:
+                        if model_field and model_field == 'item':
+                            item = Item.objects.filter(id=row[int(index)])
+                            if item.exists():
+                                item_data[model_field] = item.first()
+                        elif model_field and model_field == 'client':
+                            client = Client.objects.filter(id=row[int(index)])
+                            if client.exists():
+                                item_data[model_field] = client.first()
+                        elif model_field and model_field != 'id':
+                            item_data[model_field] = row[int(index)]
+                    except Exception as e:
+                        print(f"Error processing index {index}: {e}")
 
-            try:
-                item, created = Reservation.objects.get_or_create(id=item_id, defaults=item_data)
+                try:
+                    item = Reservation()
 
-                if not created:
                     for model_field, value in item_data.items():
                         setattr(item, model_field, value)
                     item.save()
 
-            except Exception as e:
-                print(f"Error processing row {row}: {e}")
+                except Exception as e:
+                    print(f"Error processing row {row}: {e}")
 
         cache.delete('uploaded_csv')
         return redirect("reservations")
@@ -429,29 +466,44 @@ def clients_confirm_import(request):
         for row in csv_data:
             client_data = {}
 
-            if 'id' not in field_mapping.values():
-                raise ValueError("CSV does not contain 'id' field in the mapping")
+            if 'id' in field_mapping.values():
+                client_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
+                client_id = row[int(client_id_field_index)].strip('\ufeff').strip()
 
-            client_id_field_index = list(field_mapping.keys())[list(field_mapping.values()).index('id')]
-            client_id = row[int(client_id_field_index)].strip('\ufeff').strip()
+                try:
+                    for index, model_field in field_mapping.items():
+                        if model_field and model_field != 'id':
+                            client_data[model_field] = row[int(index)]
+                except Exception as e:
+                    print(f"Error processing index {index}: {e}")
 
-            try:
-                for index, model_field in field_mapping.items():
-                    if model_field and model_field != 'id':
-                        client_data[model_field] = row[int(index)]
-            except Exception as e:
-                print(f"Error processing index {index}: {e}")
+                try:
+                    client, created = Client.objects.get_or_create(id=client_id, defaults=client_data)
 
-            try:
-                client, created = Client.objects.get_or_create(id=client_id, defaults=client_data)
+                    if not created:
+                        for model_field, value in client_data.items():
+                            setattr(client, model_field, value)
+                        client.save()
 
-                if not created:
+                except Exception as e:
+                    print(f"Error processing row {row}: {e}")
+            else:
+                try:
+                    for index, model_field in field_mapping.items():
+                        if model_field:
+                            client_data[model_field] = row[int(index)]
+                except Exception as e:
+                    print(f"Error processing index {index}: {e}")
+
+                try:
+                    client = Client()
+
                     for model_field, value in client_data.items():
                         setattr(client, model_field, value)
                     client.save()
 
-            except Exception as e:
-                print(f"Error processing row {row}: {e}")
+                except Exception as e:
+                    print(f"Error processing row {row}: {e}")
 
         cache.delete('uploaded_csv')
         return redirect("clients")

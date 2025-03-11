@@ -15,31 +15,35 @@
             </div>
 
             {% if data %}
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            {% for col_index in data.0|length|get_range %}
-                                <th>
-                                    <select class="form-control" name="col_{{ col_index }}">
-                                        <option value="">Ignore</option>
-                                        {% for field in fields %}
-                                            <option value="{{ field.value }}">{{ field.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in data %}
+                <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                    <table class="table table-bordered table-striped" style="table-layout: fixed; width: 100%;">
+                        <thead>
                             <tr>
-                                {% for col in row %}
-                                    <td>{{ col }}</td>
+                                {% for col_index in data.0|length|get_range %}
+                                    <th style="width: 150px; min-width: 150px;">
+                                        <select class="form-control" name="col_{{ col_index }}">
+                                            <option value="">Ignore</option>
+                                            {% for field in fields %}
+                                                <option value="{{ field.value }}">{{ field.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </th>
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for row in data %}
+                                <tr>
+                                    {% for col in row %}
+                                        <td style="width: 150px; min-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {{ col }}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 
                 <button type="submit" class="btn btn-primary">Confirm & Save</button>
             {% else %}
