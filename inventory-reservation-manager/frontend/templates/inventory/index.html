@@ -18,6 +18,13 @@
                         <input type="text" id="tableFilter" class="form-control my-2 py-2 w-100" placeholder="Search...">
                     </div>
                     <div class="nav-item ml-2">
+                        <button class="btn btn-outline-warning my-2 py-2" id="on_warehouse_filter" value="warehouse_all">
+                            <i class="fa fa-list" id="warehouse_all"></i>
+                            <i class="fa fa-box d-none" id="warehouse_returned"></i>
+                            <i class="fa fa-box-open d-none" id="warehouse_borrowed"></i>
+                        </button>
+                    </div>
+                    <div class="nav-item ml-2">
                         <button class="btn btn-outline-secondary my-2 py-2" id="clean_filter">
                             <i class="fa fa-broom"></i>
                         </button>
@@ -67,17 +74,17 @@
                 <tbody>
                     {% for item in items %}
                     <tr>
-                        <td class="td-center text-center" data-id="item_name" data-value="{{ item.name }}">{{ item.name }}</td>
-                        <td class="td-center text-center" data-id="item_stocked" data-value="{{ item.stocked }}">
+                        <td class="td-center text-center td-name" data-id="item_name" data-value="{{ item.name }}">{{ item.name }}</td>
+                        <td class="td-center text-center td-stocked" data-id="item_stocked" data-value="{{ item.stocked }}">
                             {% if item.stocked %}
                             Ano
                             {% else %}
                             Ne
                             {% endif %}
                         </td>
-                        <td class="td-center text-center" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">{{ item.inventory_number }}</td>
-                        <td class="td-center text-center"><img src="{{item.image.url}}" alt="{{item.image.name}}" class="table-img"></td>
-                        <td class="td-center text-center">
+                        <td class="td-center text-center td-ic" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">{{ item.inventory_number }}</td>
+                        <td class="td-center text-center td-image"><img src="{{item.image.url}}" alt="{{item.image.name}}" class="table-img"></td>
+                        <td class="td-center text-center td-calendar">
                             <div class="calendar-container mx-0" data-item-id="{{ item.pk }}">
                                 <div class="w-100 d-flex justify-content-between">
                                     <button onclick="prevMonth(this)"><i class="fas fa-arrow-left"></i></button>
@@ -100,8 +107,8 @@
                                 </table>
                             </div>
                         </td>
-                        <td class="td-center">{{ item.description }}</td>
-                        <td class="td-actions text-center align-middle">
+                        <td class="td-center td-description">{{ item.description }}</td>
+                        <td class="td-actions text-center align-middle td-action">
                             <form class="form-action-inline my-2 my-lg-0 w-100 mb-2" id="reserve-form" method="get" action="{% url 'reservations_add' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="pk" value="{{ item.pk }}">
