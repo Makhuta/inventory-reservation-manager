@@ -29,21 +29,22 @@ class Item(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def is_default_image(self):
+        return self.image.name == default_place_pics()
 
     def save(self, *args, **kwargs):
-        if self.image:
-            if self.pk:
-                item = Item.objects.filter(pk=self.pk)
-                if item.exists():
-                    old_image = item.first().image
-                    if old_image and old_image != self.image:
-                        if default_storage.exists(old_image.path):
-                            default_storage.delete(old_image.path)
-        
+        if self.pk:
+            item = Item.objects.filter(pk=self.pk).first()
+            if item and item.image and item.image != self.image and not item.is_default_image():
+                old_image_path = item.image.path
+                if default_storage.exists(old_image_path):
+                    default_storage.delete(old_image_path)
+
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.image:
+        if self.image and not self.is_default_image():
             if default_storage.exists(self.image.path):
                 default_storage.delete(self.image.path)
         super().delete(*args, **kwargs)

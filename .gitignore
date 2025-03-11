@@ -4,3 +4,4 @@
 *migrations/
 inventory-reservation-manager/static/*
 venv/*
+*.env
