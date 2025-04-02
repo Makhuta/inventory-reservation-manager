@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% load mysplit %}
+
 {% block title %}Inventory{% endblock %}
 
 {% block styles %}
@@ -82,7 +84,13 @@
                             Ne
                             {% endif %}
                         </td>
-                        <td class="td-center text-center td-ic" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">{{ item.inventory_number }}</td>
+                        <td class="td-center text-center td-ic" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">
+                            <ul class="list-unstyled">
+                                {% for ic_part in item.inventory_number|mysplit:"_,-1" %}
+                                <li class="list-unstyled-item">{{ ic_part }}</li>                                
+                                {% endfor %}
+                            </ul>
+                        </td>
                         <td class="td-center text-center td-image"><img src="{{item.image.url}}" alt="{{item.image.name}}" class="table-img"></td>
                         <td class="td-center text-center td-calendar">
                             <div class="calendar-container mx-0" data-item-id="{{ item.pk }}">
