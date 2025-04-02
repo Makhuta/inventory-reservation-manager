@@ -7,23 +7,6 @@ function decide_stock_display(on_returned_filter, itemReturnedValue) {
     return false;
 }
 
-function update_filter(f) {
-    let filter = f ? f.value.toLowerCase() : "";
-    let on_warehouse_filter = document.getElementById("on_warehouse_filter");
-    let rows = document.querySelectorAll("#inventory > tbody > tr");
-
-    rows.forEach(row => {
-        let titleElement = row.querySelector("[data-id='item_name']");
-        let titleText = titleElement ? titleElement.getAttribute("data-value").toLowerCase() : "";
-        let clientElement = row.querySelector("[data-id='item_client']");
-        let clientText = clientElement ? clientElement.getAttribute("data-value").toLowerCase() : "";
-        let itemReturnedElement = row.querySelector("[data-id='item_returned']");
-        let itemReturnedValue = (itemReturnedElement ? itemReturnedElement.getAttribute("data-value").toLowerCase() : "false") == "true";
-
-        row.style.display = ((titleText.includes(filter) || clientText.includes(filter)) && decide_stock_display(on_returned_filter, itemReturnedValue)) ? "" : "none";
-    });
-}
-
 document.getElementById("tableFilter").addEventListener("keyup", function () {
     update_filter(this);
 });

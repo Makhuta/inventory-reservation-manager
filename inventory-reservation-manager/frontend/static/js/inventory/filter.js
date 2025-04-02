@@ -1,29 +1,3 @@
-function decide_stock_display(on_warehouse_filter, itemStockedValue) {
-    if(!on_warehouse_filter) return true;
-    if(on_warehouse_filter.value == "warehouse_all") return true;
-    if(on_warehouse_filter.value == "warehouse_borrowed" && !itemStockedValue) return true;
-    if(on_warehouse_filter.value == "warehouse_returned" && itemStockedValue) return true;
-
-    return false;
-}
-
-function update_filter(f) {
-    let filter = f ? f.value.toLowerCase() : "";
-    let on_warehouse_filter = document.getElementById("on_warehouse_filter");
-    let rows = document.querySelectorAll("#inventory > tbody > tr");
-
-    rows.forEach(row => {
-        let titleElement = row.querySelector("[data-id='item_name']");
-        let titleText = titleElement ? titleElement.getAttribute("data-value").toLowerCase() : "";
-        let inventoryNumberElement = row.querySelector("[data-id='item_inventory_number']");
-        let inventoryNumberText = inventoryNumberElement ? inventoryNumberElement.getAttribute("data-value").toLowerCase() : "";
-        let itemStockedElement = row.querySelector("[data-id='item_stocked']");
-        let itemStockedValue = (itemStockedElement ? itemStockedElement.getAttribute("data-value").toLowerCase() : "false") == "true";
-
-        row.style.display = ((titleText.includes(filter) || inventoryNumberText.includes(filter)) && decide_stock_display(on_warehouse_filter, itemStockedValue)) ? "" : "none";
-    });
-}
-
 document.getElementById("tableFilter").addEventListener("keyup", function () {
     update_filter(this);
 });

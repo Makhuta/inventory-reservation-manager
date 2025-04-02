@@ -15,7 +15,7 @@ function getUserColor(name) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-document.querySelectorAll(".calendar-container").forEach(container => {
+    document.querySelectorAll(".calendar-container").forEach(container => {
         let itemId = container.getAttribute("data-item-id");
         initCalendar(container, itemId);
     });

@@ -1,0 +1,155 @@
+{% extends "core.html" %}
+{% load static %}
+
+{% load mysplit %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/inventory/index.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.15/main.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block base %}
+    <div id="inventory_list" class="h-auto">
+        <div class="container-fluid">
+            <div class="table-responsive">
+                <table class="table" style="width: 100vw;" id="inventory">
+                    <thead class="w-100">
+                        <tr class="w-100">
+                            <th class="text-center td-name">Jméno</th>
+                            <th class="text-center td-stocked">Na skladě</th>
+                            <th class="text-center td-ic">IČ</th>
+                            <th class="text-center td-image">Fotka</th>
+                            <th class="text-center td-calendar">Kalendář</th>
+                            <th class="text-center td-description">Popis</th>
+                            <th class="text-center td-action">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        <tr>
+                            <td class="td-center text-center td-name" data-id="item_name" data-value="{{ item.name }}">{{ item.name }}</td>
+                            <td class="td-center text-center td-stocked" data-id="item_stocked" data-value="{{ item.stocked }}">
+                                {% if item.stocked %}
+                                Ano
+                                {% else %}
+                                Ne
+                                {% endif %}
+                            </td>
+                            <td class="td-center text-center td-ic" data-id="item_inventory_number" data-value="{{ item.inventory_number }}">
+                                <ul class="list-unstyled">
+                                    {% for ic_part in item.inventory_number|mysplit:"_,-1" %}
+                                    <li class="list-unstyled-item">{{ ic_part }}</li>                                
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="td-center text-center td-image"><img src="{{item.image.url}}" alt="{{item.image.name}}" class="table-img"></td>
+                            <td class="td-center text-center td-calendar">
+                                <div class="calendar-container mx-0" data-item-id="{{ item.pk }}">
+                                    <div class="w-100 d-flex justify-content-between">
+                                        <button onclick="prevMonth(this)"><i class="fas fa-arrow-left"></i></button>
+                                        <span class="month-year"></span>
+                                        <button onclick="nextMonth(this)"><i class="fas fa-arrow-right"></i></button>
+                                    </div>
+                                    <table class="mx-auto m-2 td-calendar">
+                                        <thead>
+                                            <tr>
+                                                <th class="calendar">Po</th>
+                                                <th class="calendar">Út</th>
+                                                <th class="calendar">St</th>
+                                                <th class="calendar">Čt</th>
+                                                <th class="calendar">Pá</th>
+                                                <th class="calendar">So</th>
+                                                <th class="calendar">Ne</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="calendar-body"></tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td class="td-center td-description">{{ item.description }}</td>
+                            <td class="td-actions text-center align-middle td-action">
+                                <form class="form-action-inline my-2 my-lg-0 w-100 mb-2" id="reserve-form" method="get" action="{% url 'reservations_add' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ item.pk }}">
+                                    <button class="btn btn-outline-success w-100" type="submit">Reserve <i class="fa fa-calendar"></i></button>
+                                </form>
+                                <form class="form-action-inline my-2 my-lg-0 w-100 py-2" id="reserve-form" method="get" action="{% url 'item_modify' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ item.pk }}">
+                                    <button class="btn btn-outline-warning w-100" type="submit">Edit <i class="fa fa-edit"></i></button>
+                                </form>
+                                <form class="form-action-inline my-2 my-lg-0 w-100" id="reserve-form" method="get" action="{% url 'item_delete' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ item.pk }}">
+                                    <button class="btn btn-outline-danger w-100" type="submit">Delete <i class="fa fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center align-middle">No items</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <nav>
+            <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}&stock={{ stock }}">&laquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+        
+            <!-- First Page -->
+            {% if page_obj.number > 2 %}
+                <li class="page-item"><a class="page-link" href="?page=1&search={{ search }}&stock={{ stock }}">1</a></li>
+                {% if page_obj.number > 3 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endif %}
+        
+            <!-- Page Range -->
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num >= page_obj.number|add:'-1' and num <= page_obj.number|add:'1' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search }}&stock={{ stock }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+        
+            <!-- Last Page -->
+            {% if page_obj.number < page_obj.paginator.num_pages|add:'-1' %}
+                {% if page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search }}&stock={{ stock }}">{{ page_obj.paginator.num_pages }}</a></li>
+            {% endif %}
+        
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}&stock={{ stock }}">&raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/inventory/index.js' %}"></script>
+<script>
+    function fetchReservations(itemId, callback) {
+        fetch(`{% url 'api_item_reservations' %}?pk=${itemId}`)
+            .then(response => response.json())
+            .then(data => callback(data))
+            .catch(error => console.error("Error fetching reservations:", error));
+        }
+</script>
+{% endblock %}

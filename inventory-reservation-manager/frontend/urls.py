@@ -11,6 +11,7 @@ urlpatterns = [
 
 
     path("inventory", views.inventory, name="inventory"),
+    path("inventory/list", views.inventory_list, name="inventory_list"),
     path("inventory/add", views.item_add, name="item_add"),
     path("items/import", views.items_import, name="items_import"),
     path("items/confirm_import", views.items_confirm_import, name="items_confirm_import"),
@@ -20,6 +21,7 @@ urlpatterns = [
 
 
     path("reservations", views.reservations, name="reservations"),
+    path("reservations/list", views.reservations_list, name="reservations_list"),
     path("reservations/add", views.reservations_add, name="reservations_add"),
     path("reservations/return", views.reservations_return, name="reservations_return"),
     path("reservations/import", views.reservations_import, name="reservations_import"),
@@ -30,6 +32,7 @@ urlpatterns = [
 
 
     path("clients", views.clients, name="clients"),
+    path("clients/list", views.clients_list, name="clients_list"),
     path("clients/add", views.clients_add, name="clients_add"),
     path("clients/import", views.clients_import, name="clients_import"),
     path("clients/confirm_import", views.clients_confirm_import, name="clients_confirm_import"),

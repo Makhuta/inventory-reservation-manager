@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
+from django.urls import reverse
+from urllib.parse import urlencode
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now as date_now
 from django.contrib.auth import logout
@@ -7,6 +9,8 @@ from django.http import JsonResponse, HttpResponse
 import csv
 from django.core.cache import cache
 from django.template.defaulttags import register
+from django.core.paginator import Paginator
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from .functions import custom_render
 
@@ -46,8 +50,30 @@ def my_logout(request):
 
 @login_required
 def inventory(request):
-    items = sorted(list(Item.objects.all()), key=lambda item: item.name.upper())
-    return custom_render(request, "inventory/index.html", {'items': items })
+    return custom_render(request, "inventory/index.html")
+
+@xframe_options_exempt
+@login_required
+def inventory_list(request):
+    search_query = request.GET.get("search", "").lower()
+    stock_filter = request.GET.get("stock", "warehouse_all")
+    page_number = request.GET.get("page", 1)
+
+    items = Item.objects.all()
+
+    if search_query:
+        items = items.filter(name__contains=search_query) | items.filter(inventory_number__icontains=search_query)
+
+    if stock_filter == "warehouse_returned":
+        items = [item for item in items if item.stocked]
+    elif stock_filter == "warehouse_borrowed":
+        items = [item for item in items if not item.stocked]
+
+    paginator = Paginator(sorted(list(items), key=lambda item: item.name.upper()), 10)
+
+    page_obj = paginator.get_page(page_number)
+
+    return custom_render(request, "inventory/item_list.html", {"page_obj": page_obj, "search": search_query, "stock": stock_filter })
 
 @login_required
 def item_add(request):
@@ -206,8 +232,31 @@ def item_delete(request):
 
 @login_required
 def reservations(request):
-    rezerfations = sorted(list(Reservation.objects.all()), key=lambda r: r.item.name.upper())
-    return custom_render(request, "reservations/index.html", {'reservations': rezerfations})
+    return custom_render(request, "reservations/index.html")
+
+@xframe_options_exempt
+@login_required
+def reservations_list(request):
+    search_query = request.GET.get("search", "").lower()
+    return_filter = request.GET.get("returned", "returned_all")
+    page_number = request.GET.get("page", 1)
+
+    rezerfations = Reservation.objects.all()
+    
+    if search_query:
+        rezerfations = [r for r in rezerfations if search_query in f'{r.item}' or search_query in f'{r.client}']
+
+    if return_filter == "returned_returned":
+        rezerfations = [item for item in rezerfations if item.returned]
+    elif return_filter == "returned_borrowed":
+        rezerfations = [item for item in rezerfations if not item.returned]
+
+    paginator = Paginator(sorted(list(rezerfations), key=lambda r: r.item.name.upper()), 10)
+
+    page_obj = paginator.get_page(page_number)
+
+
+    return custom_render(request, "reservations/reservation_list.html", {'page_obj': page_obj, "search": search_query, "returned": return_filter})
 
 @login_required
 def reservations_add(request):
@@ -236,6 +285,7 @@ def reservations_add(request):
 
     return custom_render(request, "reservations/add.html", {'form': ReservationForm(initial=initial), 'errors': []})
 
+@xframe_options_exempt
 @login_required
 def reservations_return(request):
     if request.method == 'GET':
@@ -244,7 +294,14 @@ def reservations_return(request):
             rezerfation = Reservation.objects.get(pk=pk)
             rezerfation.returned = not rezerfation.returned
             rezerfation.save()
-    return redirect('reservations')
+    url = reverse('reservations_list')
+    params = {
+        "search": request.GET.get("search", ""),
+        "page": request.GET.get("page", "1"),
+        "returned": request.GET.get("returned", "returned_all"),
+    }
+    params_string = urlencode(params)
+    return redirect(f"{url}?{params_string}")
 
 @login_required
 def reservations_import(request):
@@ -406,8 +463,24 @@ def reservations_delete(request):
 
 @login_required
 def clients(request):
-    clients = sorted(list(Client.objects.all()), key=lambda client: client.name.upper())
-    return custom_render(request, "clients/index.html", {'clients': clients})
+    return custom_render(request, "clients/index.html")
+
+@xframe_options_exempt
+@login_required
+def clients_list(request):
+    search_query = request.GET.get("search", "").lower()
+    page_number = request.GET.get("page", 1)
+
+    clients = Client.objects.all()
+
+    if search_query:
+        clients = clients.filter(name__contains=search_query) | clients.filter(phone__contains=search_query) | clients.filter(email__contains=search_query)
+
+    paginator = Paginator(sorted(list(clients), key=lambda client: client.name.upper()), 10)
+
+    page_obj = paginator.get_page(page_number)
+
+    return custom_render(request, "clients/client_list.html", {'search': search_query, 'page_obj': page_obj})
 
 @login_required
 def clients_add(request):

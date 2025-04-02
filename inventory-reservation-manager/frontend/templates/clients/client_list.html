@@ -1,0 +1,100 @@
+{% extends "core.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/clients/index.css' %}">
+{% endblock %}
+
+{% block base %}
+    <div id="clients_list" class="h-auto">
+        <div class="container-fluid">
+            <div class="table-responsive">
+                <table class="table" style="width: 100vw;" id="clients">
+                    <thead class="w-100">
+                        <tr class="w-100">
+                            <th class="text-center td-name">Jméno</th>
+                            <th class="text-center td-phone">Telefon</th>
+                            <th class="text-center td-email">Email</th>
+                            <th class="text-center td-action">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for client in page_obj %}
+                        <tr>
+                            <td class="td-center text-center" data-id="client_name" data-value="{{ client.name }}">{{ client.name }}</td>
+                            <td class="td-center text-center" data-id="client_phone" data-value="{{ client.phone }}">{{ client.phone }}</td>
+                            <td class="td-center text-center" data-id="client_email" data-value="{{ client.email }}">{{ client.email }}</td>
+
+                            <td class="td-actions text-center align-middle">
+                                <form class="form-action-inline my-2 my-lg-0 w-100 py-2" id="reserve-form" method="get" action="{% url 'clients_modify' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ client.pk }}">
+                                    <button class="btn btn-outline-warning w-100" type="submit">Edit <i class="fa fa-edit"></i></button>
+                                </form>
+                                <form class="form-action-inline my-2 my-lg-0 w-100" id="reserve-form" method="get" action="{% url 'clients_delete' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ client.pk }}">
+                                    <button class="btn btn-outline-danger w-100" type="submit">Delete <i class="fa fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center align-middle">No items</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <nav>
+            <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}">&laquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+        
+            <!-- First Page -->
+            {% if page_obj.number > 2 %}
+                <li class="page-item"><a class="page-link" href="?page=1&search={{ search }}">1</a></li>
+                {% if page_obj.number > 3 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endif %}
+        
+            <!-- Page Range -->
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num >= page_obj.number|add:'-1' and num <= page_obj.number|add:'1' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+        
+            <!-- Last Page -->
+            {% if page_obj.number < page_obj.paginator.num_pages|add:'-1' %}
+                {% if page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search }}">{{ page_obj.paginator.num_pages }}</a></li>
+            {% endif %}
+        
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}">&raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/clients/index.js' %}"></script>
+{% endblock %}

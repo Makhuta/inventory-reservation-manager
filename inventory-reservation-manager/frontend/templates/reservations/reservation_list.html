@@ -1,0 +1,148 @@
+{% extends "core.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/reservations/index.css' %}">
+{% endblock %}
+
+{% block base %}
+    <div id="reservations_list" class="h-auto">
+        <div class="container-fluid">
+            <div class="table-responsive">
+                <table class="table" style="width: 100vw;" id="inventory">
+                    <thead class="w-100">
+                        <tr class="w-100">
+                            <th class="text-center td-item">Item</th>
+                            <th class="text-center td-client">Klient</th>
+                            <th class="text-center td-returned">Vráceno</th>
+                            <th class="text-center td-calendar">Kalendář</th>
+                            <th class="text-center td-action">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in page_obj %}
+                        <tr>
+                            <td class="td-center text-center" data-id="item_name" data-value="{{ reservation.item }}">{{ reservation.item }}</td>
+                            <td class="td-center text-center" data-id="item_client" data-value="{{ reservation.client }}">{{ reservation.client }}</td>
+                            <td class="td-center text-center" data-id="item_returned" data-value="{{ reservation.returned }}">
+                                {% if reservation.returned %}
+                                Ano
+                                {% else %}
+                                Ne
+                                {% endif %}
+                            </td>
+                            <td class="td-center text-center">
+                                <div class="calendar-container mx-0 " data-item-id="{{ reservation.pk }}">
+                                    <div class="w-100 d-flex justify-content-between">
+                                        <button onclick="prevMonth(this)"><i class="fas fa-arrow-left"></i></button>
+                                        <span class="month-year"></span>
+                                        <button onclick="nextMonth(this)"><i class="fas fa-arrow-right"></i></button>
+                                    </div>
+                                    <table class="mx-auto m-2 td-calendar">
+                                        <thead>
+                                            <tr>
+                                                <th class="calendar">Po</th>
+                                                <th class="calendar">Út</th>
+                                                <th class="calendar">St</th>
+                                                <th class="calendar">Čt</th>
+                                                <th class="calendar">Pá</th>
+                                                <th class="calendar">So</th>
+                                                <th class="calendar">Ne</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="calendar-body"></tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td class="td-actions text-center align-middle">
+                                <form class="form-action-inline my-2 my-lg-0 w-100" id="reserve-form" method="get" action="{% url 'reservations_return' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ reservation.pk }}">
+                                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                                    <input type="hidden" name="search" value="{{ search }}">
+                                    <input type="hidden" name="returned" value="{{ returned }}">
+                                    {% if reservation.returned %}
+                                    <button class="btn btn-outline-secondary w-100" type="submit">Odvrátit <i class="fa fa-truck"></i></button>
+                                    {% else %}
+                                    <button class="btn btn-outline-primary w-100" type="submit">Vrátit <i class="icon-flipped fa fa-truck"></i></button>
+                                    {% endif %}
+                                </form>
+                                <form class="form-action-inline my-2 my-lg-0 w-100 py-2" id="reserve-form" method="get" action="{% url 'reservations_modify' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ reservation.pk }}">
+                                    <button class="btn btn-outline-warning w-100" type="submit">Edit <i class="fa fa-edit"></i></button>
+                                </form>
+                                <form class="form-action-inline my-2 my-lg-0 w-100" id="reserve-form" method="get" action="{% url 'reservations_delete' %}" target="_parent">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pk" value="{{ reservation.pk }}">
+                                    <button class="btn btn-outline-danger w-100" type="submit">Delete <i class="fa fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center align-middle">No items</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <nav>
+                <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}">&laquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+            
+                <!-- First Page -->
+                {% if page_obj.number > 2 %}
+                    <li class="page-item"><a class="page-link" href="?page=1&search={{ search }}">1</a></li>
+                    {% if page_obj.number > 3 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endif %}
+            
+                <!-- Page Range -->
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num >= page_obj.number|add:'-1' and num <= page_obj.number|add:'1' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            
+                <!-- Last Page -->
+                {% if page_obj.number < page_obj.paginator.num_pages|add:'-1' %}
+                    {% if page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search }}">{{ page_obj.paginator.num_pages }}</a></li>
+                {% endif %}
+            
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+                </ul>
+            </nav>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/reservations/index.js' %}"></script>
+    <script>
+        function fetchReservations(itemId, callback) {
+            fetch(`{% url 'api_reservation' %}?pk=${itemId}`)
+                .then(response => response.json())
+                .then(data => callback(data))
+                .catch(error => console.error("Error fetching reservations:", error));
+        }
+    </script>
+{% endblock %}

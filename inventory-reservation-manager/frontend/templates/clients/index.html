@@ -47,45 +47,43 @@
 
 
 <main class="py-4">
-    <div class="container-fluid">
-        <div class="table-responsive">
-            <table class="table" style="width: 100vw;" id="inventory">
-                <thead class="w-100">
-                    <tr class="w-100">
-                        <th class="text-center td-name">Jméno</th>
-                        <th class="text-center td-phone">Telefon</th>
-                        <th class="text-center td-email">Email</th>
-                        <th class="text-center td-action">Akce</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for client in clients %}
-                    <tr>
-                        <td class="td-center text-center" data-id="client_name" data-value="{{ client.name }}">{{ client.name }}</td>
-                        <td class="td-center text-center" data-id="client_phone" data-value="{{ client.phone }}">{{ client.phone }}</td>
-                        <td class="td-center text-center" data-id="client_email" data-value="{{ client.email }}">{{ client.email }}</td>
-
-                        <td class="td-actions text-center align-middle">
-                            <form class="form-action-inline my-2 my-lg-0 w-100 py-2" id="reserve-form" method="get" action="{% url 'clients_modify' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="pk" value="{{ client.pk }}">
-                                <button class="btn btn-outline-warning w-100" type="submit">Edit <i class="fa fa-edit"></i></button>
-                            </form>
-                            <form class="form-action-inline my-2 my-lg-0 w-100" id="reserve-form" method="get" action="{% url 'clients_delete' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="pk" value="{{ client.pk }}">
-                                <button class="btn btn-outline-danger w-100" type="submit">Delete <i class="fa fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <iframe class="w-100 border-0" id="clients-frame" src="{% url 'clients_list' %}?page=1" onload="resizeIframe(this)"></iframe>
 </main>
 {% endblock %}
 
 {% block scripts %}
+<script>
+    function update_filter(f) {
+        let filter = f ? f.value.toLowerCase() : "";
+
+        let iframe = document.getElementById("clients-frame");
+
+        let url = `{% url 'clients_list' %}?page=1&search=${encodeURIComponent(filter)}`;
+        
+        iframe.src = url;
+    }
+</script>
 <script src="{% static 'js/clients/filter.js' %}"></script>
+<script>
+    function resizeIframe(iframe) {
+        const iframeDocument = iframe.contentWindow.document;
+        const iframeBody = iframeDocument.querySelector("#clients_list");
+
+        // Function to update iframe height based on content
+        function updateIframeHeight() {
+        iframe.height = iframeBody.scrollHeight + "px"; // Update height based on scrollHeight
+        }
+
+        // MutationObserver to detect changes in the iframe content
+        const observer = new MutationObserver(() => {
+        updateIframeHeight();  // Resize iframe when content changes
+        });
+
+        // Observer configuration to listen for child changes in the body of iframe
+        observer.observe(iframeBody, { childList: true, subtree: true });
+
+        // Initial resize
+        updateIframeHeight();
+    }
+</script>
 {% endblock %}
