@@ -46,7 +46,7 @@ def my_logout(request):
 
 @login_required
 def inventory(request):
-    items = Item.objects.all()
+    items = sorted(list(Item.objects.all()), key=lambda item: item.name)
     return custom_render(request, "inventory/index.html", {'items': items })
 
 @login_required
@@ -206,7 +206,7 @@ def item_delete(request):
 
 @login_required
 def reservations(request):
-    rezerfations = Reservation.objects.all()
+    rezerfations = sorted(list(Reservation.objects.all()), key=lambda r: r.item.name)
     return custom_render(request, "reservations/index.html", {'reservations': rezerfations})
 
 @login_required
@@ -406,7 +406,7 @@ def reservations_delete(request):
 
 @login_required
 def clients(request):
-    clients = Client.objects.all()
+    clients = sorted(list(Client.objects.all()), key=lambda client: client.name)
     return custom_render(request, "clients/index.html", {'clients': clients})
 
 @login_required
