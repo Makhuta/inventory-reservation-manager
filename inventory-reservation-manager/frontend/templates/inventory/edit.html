@@ -31,8 +31,22 @@
                     </div>
                 {% endif %}
                 
-                {{ form.image }}
+                <input type="file" id="{{ form.image.id_for_label }}" name="{{ form.image.html_name }}" accept="image/*">
             </div>
+            
+            <!-- Button to toggle camera view -->
+            <button type="button" id="toggle-camera" class="btn btn-secondary mb-3">
+                Use Camera
+            </button>
+            
+            <!-- Camera container (hidden initially) -->
+            <div id="camera-container" style="display: none; margin-top: 10px;">
+                <video id="video" autoplay style="width: 100%; border-radius: 8px;"></video>
+                <button type="button" id="capture" class="btn btn-primary mt-2 mb-3">Capture</button>
+            </div>
+            
+            <!-- Hidden canvas for capturing the image -->
+            <canvas id="canvas" style="display: none;"></canvas>
 
             <!-- Description -->
             <div class="form-group">
@@ -52,4 +66,91 @@
         {% endif %}
     </div>
 </main>
+{% endblock %}
+
+
+
+
+
+{% block scripts %}
+<script>
+    const fileInput = document.getElementById("{{ form.image.id_for_label }}");
+    const toggleCameraBtn = document.getElementById("toggle-camera");
+    const cameraContainer = document.getElementById("camera-container");
+    const video = document.getElementById("video");
+    const captureBtn = document.getElementById("capture");
+    const canvas = document.getElementById("canvas");
+
+    let streamActive = false;
+
+    // Toggle camera visibility
+    toggleCameraBtn.addEventListener("click", () => {
+        if (!streamActive) {
+            // Show camera container and start video stream
+            cameraContainer.style.display = "block";
+            toggleCameraBtn.classList.remove("mb-3");
+            startCamera();
+            toggleCameraBtn.innerText = "Close Camera";
+        } else {
+            // Hide camera container and stop video stream
+            cameraContainer.style.display = "none";
+            toggleCameraBtn.classList.add("mb-3");
+            stopCamera();
+            toggleCameraBtn.innerText = "Use Camera";
+        }
+        streamActive = !streamActive;
+    });
+
+    // Start camera stream
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => alert(`Camera access denied: ${err}`));
+    }
+
+    // Stop camera stream
+    function stopCamera() {
+        let stream = video.srcObject;
+        if (stream) {
+            let tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+        video.srcObject = null;
+    }
+
+    // Capture image from the camera
+    captureBtn.addEventListener("click", () => {
+        const ctx = canvas.getContext("2d");
+        canvas.width = video.videoWidth || video.clientWidth;
+        canvas.height = video.videoHeight || video.clientHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert canvas to Blob and assign it to the file input field
+        canvas.toBlob(blob => {
+            if (blob) {
+                const file = new File([blob], "captured.jpg", { type: "image/jpeg" });
+
+                // Use DataTransfer to simulate selecting a file
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+
+                // Debugging: Log to confirm file is set
+                console.log("File set:", fileInput.files[0].name);
+
+                // Hide camera after capturing
+                cameraContainer.style.display = "none";
+                stopCamera();
+                streamActive = false;
+                toggleCameraBtn.innerText = "Use Camera";
+            } else {
+                alert("Failed to capture image.")
+                console.error("Failed to capture image.");
+            }
+        }, "image/jpeg");
+    });
+</script>
 {% endblock %}

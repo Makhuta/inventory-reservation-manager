@@ -93,8 +93,11 @@
     // Start camera stream
     function startCamera() {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => console.error("Camera access denied:", err));
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => alert(`Camera access denied: ${err}`));
     }
 
     // Stop camera stream
@@ -110,8 +113,8 @@
     // Capture image from the camera
     captureBtn.addEventListener("click", () => {
         const ctx = canvas.getContext("2d");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth || video.clientWidth;
+        canvas.height = video.videoHeight || video.clientHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         // Convert canvas to Blob and assign it to the file input field
@@ -133,6 +136,7 @@
                 streamActive = false;
                 toggleCameraBtn.innerText = "Use Camera";
             } else {
+                alert("Failed to capture image.")
                 console.error("Failed to capture image.");
             }
         }, "image/jpeg");
