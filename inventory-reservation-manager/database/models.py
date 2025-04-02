@@ -28,7 +28,7 @@ class Item(models.Model):
         return all([r.returned for r in rezerfations if not(r.end > today_date and r.start > today_date)])
     
     def __str__(self):
-        return self.name
+        return f'{self.name} ({self.inventory_number})'
     
     def is_default_image(self):
         return self.image.name == default_place_pics()
