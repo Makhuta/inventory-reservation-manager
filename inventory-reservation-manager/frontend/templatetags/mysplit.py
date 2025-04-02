@@ -8,8 +8,6 @@ def mysplit(string:str, args:str="_"):
         parts = args.split(",")
         sep, maxsplit = (parts[0] if parts else "_", int(parts[1]) if len(parts) > 1 and parts[1] != "None" else None)
 
-        print(sep, maxsplit)
-
         if maxsplit is None or maxsplit == 0:
             return string.split(sep)
         if maxsplit < 0:
