@@ -19,7 +19,7 @@ class Item(models.Model):
     name = models.CharField(max_length=64, verbose_name="Name")
     inventory_number = models.CharField(max_length=32, verbose_name="IČ")
     image = models.ImageField(upload_to=get_image_filename, max_length=100, default=default_place_pics)
-    description = models.CharField(max_length=1024, verbose_name="Description")
+    description = models.CharField(max_length=1024, verbose_name="Description", default="", blank=True)
 
     @property
     def stocked(self):
